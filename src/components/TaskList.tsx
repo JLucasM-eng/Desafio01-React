@@ -13,17 +13,48 @@ interface Task {
 export function TaskList() {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [newTaskTitle, setNewTaskTitle] = useState('');
+  const [listIdSaved,setListIdSaved]=useState<number[]>([])
+
+  const generateId =():number=>{
+    let newId = Math.random()
+    return listIdSaved.includes(newId)?generateId(): newId
+    
+  }
 
   function handleCreateNewTask() {
     // Crie uma nova task com um id random, não permita criar caso o título seja vazio.
+    if(newTaskTitle!==''){
+      setTasks([...tasks,{
+        id: generateId(),
+        title: newTaskTitle,
+        isComplete: false}])
+    }else{
+      return;
+    }
+
   }
 
   function handleToggleTaskCompletion(id: number) {
     // Altere entre `true` ou `false` o campo `isComplete` de uma task com dado ID
+    let newTasks =tasks.map((task)=>{
+      if(task.id===id){
+        return {
+          ...task,
+          isComplete:!task.isComplete
+        }
+      }else{
+        return task
+      }
+    })
+    setTasks(newTasks)
   }
 
   function handleRemoveTask(id: number) {
     // Remova uma task da listagem pelo ID
+    let newTasksremoved =tasks.filter((task)=>{
+      return task.id!==id
+    })
+    setTasks(newTasksremoved)
   }
 
   return (
@@ -36,9 +67,18 @@ export function TaskList() {
             type="text" 
             placeholder="Adicionar novo todo" 
             onChange={(e) => setNewTaskTitle(e.target.value)}
+            onKeyPress={(e)=>{
+              console.log(e)
+              if(e.code==="Enter" ||e.code==="NumpadEnter"){
+                handleCreateNewTask()
+                setNewTaskTitle('')
+             }
+            }}
             value={newTaskTitle}
           />
-          <button type="submit" data-testid="add-task-button" onClick={handleCreateNewTask}>
+          <button type="submit" data-testid="add-task-button" onClick={()=>{
+            handleCreateNewTask() 
+            setNewTaskTitle('')}}>
             <FiCheckSquare size={16} color="#fff"/>
           </button>
         </div>
